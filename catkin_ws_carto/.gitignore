@@ -1,5 +1,5 @@
 # compile files and directories
-*build
+build*
 devel*
 install*
 .idea

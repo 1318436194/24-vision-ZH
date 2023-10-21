@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<opencv_storage>
+    <light_color>red</light_color>                      <!--待识别装甲板颜色red/blue-->
+
+    <!--灯条长约60mm 宽约为7mm 宽高比约为0.11-->
+    <!--大装甲板230*127 小装甲板135*125-->
+    <!--视频装甲板138*52-->
+    <armor_width>138</armor_width>                      <!--待识别装甲板宽度-->
+    <armor_height>52</armor_height>                     <!--待识别装甲板高-->
+
+    <light_min_area>200</light_min_area>                <!--灯条最小面积-->
+
+    <light_min_angle>160</light_min_angle>              <!--逆时针偏转的灯条最小角度-->
+    <light_max_angle>20</light_max_angle>               <!--顺时针偏转的灯条最大角度-->
+
+    <light_min_wh_ratio>0.08</light_min_wh_ratio>       <!--灯条最小宽高比-->
+    <light_max_wh_ratio>4.2</light_max_wh_ratio>        <!--灯条最大宽高比-->
+
+    <light_angle_dif>6.2</light_angle_dif>              <!--两灯条之间的夹角-->
+
+    <light_min_ch_ratio>1.8</light_min_ch_ratio>        <!--灯条中心距与高度之比最小值-->
+    <light_max_ch_ratio>3</light_max_ch_ratio>          <!--灯条中心距与高度之比最大值-->
+
+    <light_max_cdif_ratio>0.8</light_max_cdif_ratio>    <!--灯条中心竖直差和平均高度之比最大值-->
+</opencv_storage>
