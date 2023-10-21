@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="turtlesim" type="turtle_teleop_key" name="keyboard"/>
+    <node pkg="vehicle_simulator" type="control2" name="vel_control"/>
+</launch>
