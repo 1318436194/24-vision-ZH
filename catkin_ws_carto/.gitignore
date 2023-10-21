@@ -1,0 +1,11 @@
+# compile files and directories
+*build
+devel*
+install*
+.idea
+# midea files
+*.png
+*.jpg
+*.jpeg
+*.avi
+*.mp4

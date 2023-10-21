@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/zh/桌面/project/catkin_ws_carto/devel_isolated/cartographer_ros_msgs/setup.sh
