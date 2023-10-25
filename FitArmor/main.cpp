@@ -11,11 +11,15 @@ using namespace cv;
 
 int main(int argc,char ** argv)
 {
-    ArmorFit armor;
+    ArmorFit armor{"config.xml"};
 
     String src_path,out_path;
-    src_path=argc>1?argv[1]:"装甲板.avi";
-    out_path=argc==2?argv[2]:"装甲板效果.avi";
+    if (argc>1){
+      src_path=argv[1];
+    } else src_path="装甲板.avi";
+    if (argc>1){
+      out_path=argv[2];
+    } else out_path="装甲板效果.avi";
 
     VideoCapture capture(src_path);
     if (!capture.isOpened()){
@@ -39,11 +43,11 @@ int main(int argc,char ** argv)
         armor.match();
         writer.write(armor.out_image);
 
-
         int key = waitKey(int(1000/fps));
         if (key==32)key= waitKey(0);
         if (key==27)break;
     }
+
     capture.release();
     writer.release();
     cout<<"装甲板识别效果已写入到:"<<out_path<<endl;

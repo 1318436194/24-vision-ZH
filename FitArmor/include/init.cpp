@@ -11,14 +11,15 @@ using namespace cv;
 
 void ArmorFit::init(const Mat &src) {
     this->src_image = src;
+    this->out_image = src.clone();
 
-    String light_color;
-    FileStorage fs("config.xml", FileStorage::READ);
+    FileStorage fs(config, FileStorage::READ);
     if (!fs.isOpened()){
         cout<<"找不到config.xml配置文件!"<<endl;
         return;
     }
-    fs["light_color"]>>light_color;
+    fs["light_color"]>> this->light_color;
+    fs["thresh"]>> this->thresh;
     fs.release();
 
     vector<Mat>BGRChannels;
@@ -26,14 +27,14 @@ void ArmorFit::init(const Mat &src) {
     Mat RedChannel;
     Mat BinaryImage;
 
-    split(src_image, BGRChannels);
+    split(this->src_image, BGRChannels);
     BlueChannel = BGRChannels.at(0);
     RedChannel = BGRChannels.at(2);
 
     //图像二值化
-    threshold(light_color=="blue"?BlueChannel:RedChannel, BinaryImage, 200,255,THRESH_BINARY);
+    threshold(light_color=="blue"?BlueChannel:RedChannel, BinaryImage, thresh,255,THRESH_BINARY);
 
     this->temp_image = BinaryImage;
-    imshow("SrcImage",src);
-    imshow("BinaryImage",BinaryImage);
+//    imshow("SrcImage", this->src_image);
+//    imshow("BinaryImage",BinaryImage);
 }

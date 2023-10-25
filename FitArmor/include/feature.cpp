@@ -12,16 +12,16 @@ using namespace cv;
 void ArmorFit::feature() {
 
     //识别灯条
-    FileStorage fs("config.xml", FileStorage::READ);
+    FileStorage fs(config, FileStorage::READ);
     if (!fs.isOpened()){
         cout<<"找不到config.xml配置文件!"<<endl;
         return;
     }
     fs["light_min_wh_ratio"] >> light_min_wh_ratio;
     fs["light_max_wh_ratio"] >> light_max_wh_ratio;
-    fs["light_min_area"]>>light_min_area;
-    fs["light_min_angle"]>>light_min_angle;
-    fs["light_max_angle"]>>light_max_angle;
+    fs["light_min_area"] >> light_min_area;
+    fs["light_min_angle"] >> light_min_angle;
+    fs["light_max_angle"] >> light_max_angle;
     fs.release();
 
 
@@ -44,9 +44,7 @@ void ArmorFit::feature() {
         if (light_wh_ratio > light_max_wh_ratio)continue;
         if (box.area < light_min_area)continue;
 
-        if (box.angle > light_max_angle && box.angle < light_min_angle){
-            cout<<box.angle<<endl;
-            continue;}
+        if (box.angle > light_max_angle && box.angle < light_min_angle)continue;
 
         armor_light.push_back(box);
     }

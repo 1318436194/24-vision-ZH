@@ -11,7 +11,7 @@ using namespace cv;
 
 void ArmorFit::match() {
     //读入装甲板筛选参数
-    FileStorage fs("config.xml", FileStorage::READ);
+    FileStorage fs(config, FileStorage::READ);
     if (!fs.isOpened()){
         cout<<"找不到config.xml配置文件!"<<endl;
         return;
@@ -25,6 +25,7 @@ void ArmorFit::match() {
     fs.release();
 
     //配对 找到灯条中点，连线，取连线的中点
+    int armor_count{0};
     for (unsigned int i = 0; i < light.size(); i++) {
         for (unsigned int j = i+1; j < light.size(); j++) {
             double dis = distance(light[i].center, light[j].center);
@@ -36,6 +37,7 @@ void ArmorFit::match() {
             if (dif_Y/hight > light_max_cdif_ratio)continue;
             if (abs(light[i].angle-light[j].angle)>light_angle_dif)continue;
 
+            ++armor_count;
 
             //旋转矩形4条宽的中点对应装甲板4个顶点坐标
             vector<Point2f>m;
@@ -46,12 +48,12 @@ void ArmorFit::match() {
             m.emplace_back((q[0]+q[3])/2);
 
             //绘出装甲板对角线
-            line(src_image,m[0],m[2],Scalar(210,240,80),1,8);
-            line(src_image,m[1],m[3],Scalar(210,240,80),1,8);
+            line(out_image,m[0],m[2],Scalar(210,240,80),1,8);
+            line(out_image,m[1],m[3],Scalar(210,240,80),1,8);
 
             //画出装甲板中心点
             Point2f center = (light[i].center+light[j].center)/2;
-            circle(src_image,center,4,Scalar(50,255,0),-1,8);
+            circle(out_image,center,4,Scalar(50,255,0),-1,8);
 
             //计算输出装甲板中心距离和位姿
             Mat tVec,rVec;
@@ -76,21 +78,21 @@ void ArmorFit::match() {
 
             //解算装甲板中心位置和偏转姿态
             solvePnP(points_of_big_armor,m,camera_matrix,distortion_coefficients,rVec,tVec);
-            cout<<"装甲板距离:"<<vec_length(tVec)<<"m"<<endl;
-            cout<<tVec<<endl;
-            cout<<rVec<<endl;
-            Mat rMat;
-            Rodrigues(rVec,rMat);
-            cout<<rMat<<endl;
-            Vec3d line(0,0,1);
-            //transpose(rMat,rMat);
-            cout<<rMat*line<<endl;
+            cout<<"装甲板"<<armor_count<<"距离:"<<vec_length(tVec)<<"m"<<endl;
+//            cout<<tVec<<endl;
+//            cout<<rVec<<endl;
+//            Mat rMat;
+//            Rodrigues(rVec,rMat);
+//            cout<<rMat<<endl;
+//            Vec3d line(0,0,1);
+//            transpose(rMat,rMat);
+//            cout<<rMat*line<<endl;
             }
         }
+    if (armor_count)cout<<endl;
 
     //输出装甲板识别效果图
-    this->out_image=src_image;
-    imshow("frame", src_image);
+    imshow("frame", out_image);
 }
 
 double ArmorFit::distance(Point2f a, Point2f b) {

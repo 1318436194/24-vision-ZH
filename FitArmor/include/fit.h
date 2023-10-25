@@ -11,6 +11,9 @@ using namespace cv;
 
 class ArmorFit{
 public:
+    explicit ArmorFit(const String& config_path="config.xml"){
+        config=config_path;
+    }
     Mat out_image;
     void init(const Mat &src);
     void feature();
@@ -20,6 +23,8 @@ public:
 private:
     Mat src_image;
     Mat temp_image;
+
+    String config;
 
     struct my_rotatedrect{
         Point2f center;             //旋转矩形中心点
@@ -31,22 +36,26 @@ private:
         float area;                 //旋转矩形的面积
     };
 
-    float armor_width;
-    float armor_height;
+    float armor_width{};
+    float armor_height{};
 
-    float light_min_area;
-    float light_min_angle;
-    float light_max_angle;
+    float light_min_area{};
+    float light_min_angle{};
+    float light_max_angle{};
 
-    float light_min_wh_ratio;
-    float light_max_wh_ratio;
+    float light_min_wh_ratio{};
+    float light_max_wh_ratio{};
 
-    float light_angle_dif;
+    float light_angle_dif{};
 
-    float light_min_ch_ratio;
-    float light_max_ch_ratio;
+    float light_min_ch_ratio{};
+    float light_max_ch_ratio{};
 
-    float light_max_cdif_ratio;
+    float light_max_cdif_ratio{};
+
+    int thresh{};
+
+    String light_color;
 
     vector<my_rotatedrect> light;
 
