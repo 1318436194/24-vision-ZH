@@ -7,5 +7,6 @@
 subdirs("gtest")
 subdirs("velodyne_simulator/velodyne_description")
 subdirs("velodyne_simulator/velodyne_simulator")
+subdirs("pointcloud_to_laserscan-lunar-devel")
 subdirs("vehicle_simulator")
 subdirs("velodyne_simulator/velodyne_gazebo_plugins")

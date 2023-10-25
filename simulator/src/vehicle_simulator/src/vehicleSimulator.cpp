@@ -56,13 +56,16 @@ const int systemDelay = 5;
 int systemInitCount = 0;
 bool systemInited = false;
 
+//创建点云变量，float x, y, z, intensity; 表示XYZ信息加上强度信息的类型
 pcl::PointCloud<pcl::PointXYZI>::Ptr scanData(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr terrainCloud(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr terrainCloudIncl(new pcl::PointCloud<pcl::PointXYZI>());
 pcl::PointCloud<pcl::PointXYZI>::Ptr terrainCloudDwz(new pcl::PointCloud<pcl::PointXYZI>());
 
+//???
 std::vector<int> scanInd;
 
+//里程计坐标系时间
 ros::Time odomTime;
 
 float vehicleX = 0;
@@ -79,7 +82,9 @@ float terrainZ = 0;
 float terrainRoll = 0;
 float terrainPitch = 0;
 
+//创建堆栈长度常量
 const int stackNum = 400;
+//用于存放连续时间内位置和姿态的数组
 float vehicleXStack[stackNum];
 float vehicleYStack[stackNum];
 float vehicleZStack[stackNum];
@@ -92,12 +97,20 @@ double odomTimeStack[stackNum];
 int odomSendIDPointer = -1;
 int odomRecIDPointer = 0;
 
+/*VoxelGrid 体素滤波器
+　pcl库中的VoxelGrid对点云进行体素化，主要就是创建一个三维体素栅格(就是每个比较小的立方体组成的体素栅格)。
+ 在每个体素(三维立方体)里面，求取该立方体内的所有点云重心点来代表这个立方体的表示，以此达到下采样的目的
+ 将点云中的每一个点与其周围的每领域比较，将其分成成分相似的点集，减少点云中的噪声和离群值*/
 pcl::VoxelGrid<pcl::PointXYZI> terrainDwzFilter;
 
+//创建雷达点云发布者
 ros::Publisher *pubScanPointer = NULL;
 
+//雷达信息回调处理函数
 void scanHandler(const sensor_msgs::PointCloud2::ConstPtr &scanIn)
 {
+
+  //第一次调用回调函数时给个延时？
   if (!systemInited)
   {
     systemInitCount++;
@@ -108,8 +121,10 @@ void scanHandler(const sensor_msgs::PointCloud2::ConstPtr &scanIn)
     return;
   }
 
+  //获取传入的雷达数据扫描时间戳
   double scanTime = scanIn->header.stamp.toSec();
 
+  //时间同步？
   if (odomSendIDPointer < 0)
   {
     return;
@@ -120,6 +135,7 @@ void scanHandler(const sensor_msgs::PointCloud2::ConstPtr &scanIn)
     odomRecIDPointer = (odomRecIDPointer + 1) % stackNum;
   }
 
+  //获取位姿信息
   double odomRecTime = odomTime.toSec();
   float vehicleRecX = vehicleX;
   float vehicleRecY = vehicleY;
@@ -148,10 +164,19 @@ void scanHandler(const sensor_msgs::PointCloud2::ConstPtr &scanIn)
   float sinTerrainRecPitch = sin(terrainRecPitch);
   float cosTerrainRecPitch = cos(terrainRecPitch);
 
+  //每次处理雷达信息前，先清空原有的消息
   scanData->clear();
+
+  //ROS中定义的点云与PCL定义的点云数据转换
   pcl::fromROSMsg(*scanIn, *scanData);
+
+  /*从传感器获得的点云可能包含几种测量误差和/或不准确。其中之一是在一些点的坐标中存在NaN（不是数）值
+   *点云对象的成员函数有称为“is_dense()”，如果所有的点都有效的返回true是为有限值。
+   * 一个NaNs表明测量传感器距离到该点的距离值是有问题的，可能是因为传感器太近或太远，或者因为表面反射。
+   * 当存在无效点云的NaNs值作为算法的输入的时候，可能会引起很多问题,所以需要去除 */
   pcl::removeNaNFromPointCloud(*scanData, *scanData, scanInd);
 
+  //通过接收到的Terrain和vehicle的位姿计算点云的世界坐标？？？
   int scanDataSize = scanData->points.size();
   for (int i = 0; i < scanDataSize; i++)
   {
@@ -174,12 +199,17 @@ void scanHandler(const sensor_msgs::PointCloud2::ConstPtr &scanIn)
 
   // publish 5Hz registered scan messages
   sensor_msgs::PointCloud2 scanData2;
+
+  //PCL中定义的点云与ROS定义的点云数据转换
   pcl::toROSMsg(*scanData, scanData2);
+
+  //发布地图坐标系点云信息，以接收到的里程计时间为时间戳
   scanData2.header.stamp = ros::Time().fromSec(odomRecTime);
   scanData2.header.frame_id = "map";
   pubScanPointer->publish(scanData2);
 }
 
+//地图坐标系点云信息回调处理函数
 void terrainCloudHandler(const sensor_msgs::PointCloud2ConstPtr &terrainCloud2)
 {
   if (!adjustZ && !adjustIncl)
@@ -196,6 +226,8 @@ void terrainCloudHandler(const sensor_msgs::PointCloud2ConstPtr &terrainCloud2)
   double elevMean = 0;
   int elevCount = 0;
   bool terrainValid = true;
+
+  //
   for (int i = 0; i < terrainCloudSize; i++)
   {
     point = terrainCloud->points[i];
@@ -204,6 +236,7 @@ void terrainCloudHandler(const sensor_msgs::PointCloud2ConstPtr &terrainCloud2)
 
     if (dis < terrainRadiusZ)
     {
+      //intensity是什么？？？
       if (point.intensity < groundHeightThre)
       {
         elevMean += point.z;
@@ -226,16 +259,19 @@ void terrainCloudHandler(const sensor_msgs::PointCloud2ConstPtr &terrainCloud2)
   else
     terrainValid = false;
 
+  //看不懂，矫正z坐标？？？
   if (terrainValid && adjustZ)
   {
     terrainZ = (1.0 - smoothRateZ) * terrainZ + smoothRateZ * elevMean;
   }
 
+  //体素滤波
   terrainCloudDwz->clear();
   terrainDwzFilter.setInputCloud(terrainCloudIncl);
   terrainDwzFilter.filter(*terrainCloudDwz);
   int terrainCloudDwzSize = terrainCloudDwz->points.size();
 
+  //若合法点云数量太少，直接返回
   if (terrainCloudDwzSize < minTerrainPointNumIncl || !terrainValid)
   {
     return;
@@ -308,6 +344,7 @@ int main(int argc, char **argv)
   ros::NodeHandle nh;
   ros::NodeHandle nhPrivate = ros::NodeHandle("~");
 
+  //从参数服务器获取参数
   nhPrivate.getParam("use_gazebo_time", use_gazebo_time);
   nhPrivate.getParam("cameraOffsetZ", cameraOffsetZ);
   nhPrivate.getParam("sensorOffsetX", sensorOffsetX);
@@ -329,23 +366,30 @@ int main(int argc, char **argv)
   nhPrivate.getParam("InclFittingThre", InclFittingThre);
   nhPrivate.getParam("maxIncl", maxIncl);
 
+  //订阅雷达信息
   ros::Subscriber subScan = nh.subscribe<sensor_msgs::PointCloud2>("/velodyne_points", 2, scanHandler);
 
+  //订阅地形图
   ros::Subscriber subTerrainCloud = nh.subscribe<sensor_msgs::PointCloud2>("/terrain_map", 2, terrainCloudHandler);
 
+  //订阅速度信息
   ros::Subscriber subSpeed = nh.subscribe<geometry_msgs::TwistStamped>("/cmd_vel", 5, speedHandler);
 
+  //创建里程计发布者
   ros::Publisher pubVehicleOdom = nh.advertise<nav_msgs::Odometry>("/odom", 5);
 
+  //里程计消息odom->base_link
   nav_msgs::Odometry odomData;
   odomData.header.frame_id = "odom";
   odomData.child_frame_id = "base_link";
 
+  //odom->base_link的坐标变换
   tf::TransformBroadcaster tfBroadcaster;
   tf::StampedTransform odomTrans;
   odomTrans.frame_id_ = "odom";
   odomTrans.child_frame_id_ = "base_link";
 
+  //机器人状态发布
   ros::Publisher pubModelState = nh.advertise<gazebo_msgs::ModelState>("/gazebo/set_model_state", 5);
   gazebo_msgs::ModelState cameraState;
   cameraState.model_name = "camera";
@@ -357,10 +401,13 @@ int main(int argc, char **argv)
   ros::Publisher pubScan = nh.advertise<sensor_msgs::PointCloud2>("/registered_scan", 2);
   pubScanPointer = &pubScan;
 
+  /*设置点云滤波器叶子大小，控制滤波器的精度和效率
+   * 小叶子适用于高表面密度的点云，反之亦然*/
   terrainDwzFilter.setLeafSize(terrainVoxelSize, terrainVoxelSize, terrainVoxelSize);
 
   printf("\nSimulation started.\n\n");
 
+  //发布频率
   ros::Rate rate(200);
   bool status = ros::ok();
   while (status)
@@ -402,6 +449,7 @@ int main(int argc, char **argv)
     terrainPitchStack[odomSendIDPointer] = terrainPitch;
 
     // publish 200Hz odometry messages
+    //!!!
     geometry_msgs::Quaternion geoQuat = tf::createQuaternionMsgFromRollPitchYaw(vehicleRoll, vehiclePitch, vehicleYaw);
 
     odomData.header.stamp = odomTime;
@@ -419,7 +467,9 @@ int main(int argc, char **argv)
     // publish 200Hz tf messages
     odomTrans.stamp_ = odomTime;
     odomTrans.setRotation(tf::Quaternion(geoQuat.x, geoQuat.y, geoQuat.z, geoQuat.w));
-    odomTrans.setOrigin(tf::Vector3(vehicleX, vehicleY, vehicleZ));
+
+    //vehicleZ->0.1
+    odomTrans.setOrigin(tf::Vector3(vehicleX, vehicleY, 0.1));
     tfBroadcaster.sendTransform(odomTrans);
 
     // publish 200Hz Gazebo model state messages (this is for Gazebo simulation)
@@ -435,6 +485,7 @@ int main(int argc, char **argv)
     robotState.pose.position.z = vehicleZ;
     pubModelState.publish(robotState);
 
+    //0->vehicleYaw
     geoQuat = tf::createQuaternionMsgFromRollPitchYaw(terrainRoll, terrainPitch, 0);
 
     lidarState.pose.orientation = geoQuat;

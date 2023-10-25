@@ -1,4 +1,4 @@
-prefix=/home/zh/桌面/project/simulator/install
+prefix=/usr/local
 
 Name: vehicle_simulator
 Description: Description of vehicle_simulator

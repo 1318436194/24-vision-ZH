@@ -7,8 +7,8 @@ void doMsg(const geometry_msgs::TwistConstPtr& twist)
 {
     geometry_msgs::TwistStamped twiststamped;
     twiststamped.header.stamp=ros::Time::now();
-    twiststamped.twist.linear.x=twist->linear.x*0.5;
-    twiststamped.twist.angular.z=twist->angular.z*0.5;
+    twiststamped.twist.linear.x=twist->linear.x*0.3;
+    twiststamped.twist.angular.z=twist->angular.z*0.3;
     twiststampedpub->publish(twiststamped);
 }
 

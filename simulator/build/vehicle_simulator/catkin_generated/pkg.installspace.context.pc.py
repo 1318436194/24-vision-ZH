@@ -4,5 +4,5 @@ PROJECT_PKG_CONFIG_INCLUDE_DIRS = "".split(';') if "" != "" else []
 PROJECT_CATKIN_DEPENDS = "roscpp;std_msgs;sensor_msgs;pcl_ros".replace(';', ' ')
 PKG_CONFIG_LIBRARIES_WITH_PREFIX = "".split(';') if "" != "" else []
 PROJECT_NAME = "vehicle_simulator"
-PROJECT_SPACE_DIR = "/home/zh/桌面/project/simulator/install"
+PROJECT_SPACE_DIR = "/usr/local"
 PROJECT_VERSION = "0.0.1"

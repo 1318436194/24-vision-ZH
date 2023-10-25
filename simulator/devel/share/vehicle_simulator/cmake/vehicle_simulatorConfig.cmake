@@ -74,7 +74,7 @@ if("TRUE" STREQUAL "TRUE")
 else()
   set(vehicle_simulator_SOURCE_PREFIX "")
   set(vehicle_simulator_DEVEL_PREFIX "")
-  set(vehicle_simulator_INSTALL_PREFIX /home/zh/桌面/project/simulator/install)
+  set(vehicle_simulator_INSTALL_PREFIX /usr/local)
   set(vehicle_simulator_PREFIX ${vehicle_simulator_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/zh/桌面/project/simulator/devel/lib;/home/zh/桌面/project/pts/devel/lib;/home/zh/桌面/project/catkin_ws_carto/install_isolated/lib;/home/zh/桌面/project/demo05_ws/devel/lib;/home/zh/桌面/project/demo04_ws/devel/lib;/home/zh/桌面/project/demo03/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/zh/桌面/project/simulator/devel/lib;/home/zh/catkin_ws/devel/lib;/home/zh/桌面/project/simulator/devel/lib;/home/zh/桌面/project/catkin_ws_carto/install_isolated/lib;/home/zh/桌面/project/demo05_ws/devel/lib;/home/zh/桌面/project/demo04_ws/devel/lib;/home/zh/桌面/project/demo03/devel/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

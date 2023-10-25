@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/zh/桌面/project/simulator/install/setup.sh
+    local-name: /usr/local/setup.sh

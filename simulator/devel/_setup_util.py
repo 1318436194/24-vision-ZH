@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
         if not args.local:
             # environment at generation time
-            CMAKE_PREFIX_PATH = r'/home/zh/桌面/project/pts/devel;/home/zh/桌面/project/catkin_ws_carto/install_isolated;/home/zh/桌面/project/demo05_ws/devel;/home/zh/桌面/project/demo04_ws/devel;/home/zh/桌面/project/demo03/devel;/opt/ros/noetic'.split(';')
+            CMAKE_PREFIX_PATH = r'/home/zh/catkin_ws/devel;/home/zh/桌面/project/simulator/devel;/home/zh/桌面/project/catkin_ws_carto/install_isolated;/home/zh/桌面/project/demo05_ws/devel;/home/zh/桌面/project/demo04_ws/devel;/home/zh/桌面/project/demo03/devel;/opt/ros/noetic'.split(';')
         else:
             # don't consider any other prefix path than this one
             CMAKE_PREFIX_PATH = []
